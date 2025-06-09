@@ -39,7 +39,7 @@
         }
     </style>
 </head>
-<body onload="window.print();">
+<body onload="window.print(); window.close();">
 <div class="receipt">
     <h2>New Albasha POS</h2>
     <h4>Order Receipt</h4>
