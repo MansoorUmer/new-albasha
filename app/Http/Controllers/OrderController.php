@@ -58,7 +58,9 @@ class OrderController extends Controller
             'amount' => $request->amount,
             'user_id' => $request->user()->id,
         ]);
-        return 'success';
+        $data['order'] = $order;
+        $data['message'] = 'success';
+        return $data;
     }
     public function partialPayment(Request $request)
     {
@@ -99,4 +101,10 @@ class OrderController extends Controller
 
         return response()->json(['message' => 'Status updated successfully']);
     }
+
+    public function printReceipt(Order $order)
+    {
+        return view('orders.receipt', compact('order'));
+    }
+
 }

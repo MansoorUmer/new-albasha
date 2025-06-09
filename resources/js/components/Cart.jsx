@@ -585,6 +585,39 @@ class Cart extends Component {
         this.setState({ order_type: event.target.value });
     }
 
+    // handleClickSubmit() {
+    //     Swal.fire({
+    //         title: this.state.translations["received_amount"],
+    //         input: "text",
+    //         inputValue: this.getTotal(this.state.cart),
+    //         cancelButtonText: this.state.translations["cancel_pay"],
+    //         showCancelButton: true,
+    //         confirmButtonText: this.state.translations["confirm_pay"],
+    //         showLoaderOnConfirm: true,
+    //         preConfirm: (amount) => {
+    //             return axios
+    //                 .post("/admin/orders", {
+    //                     customer_id: this.state.customer_id,
+    //                     amount,
+    //                     instruction: this.state.instruction,
+    //                     type: this.state.order_type,
+    //                     table_no: this.state.table_no,
+    //                 })
+    //                 .then((res) => {
+    //                     this.loadCart();
+    //                     return res.data;
+    //                 })
+    //                 .catch((err) => {
+    //                     Swal.showValidationMessage(err.response.data.message);
+    //                 });
+    //         },
+    //         allowOutsideClick: () => !Swal.isLoading(),
+    //     }).then((result) => {
+    //         if (result.value) {
+    //             // You can show a success message or redirect
+    //         }
+    //     });
+    // }
     handleClickSubmit() {
         Swal.fire({
             title: this.state.translations["received_amount"],
@@ -614,7 +647,11 @@ class Cart extends Component {
             allowOutsideClick: () => !Swal.isLoading(),
         }).then((result) => {
             if (result.value) {
-                // You can show a success message or redirect
+                console.log("result:",result);
+                const orderId = result.value.order.id;
+                // ✅ Open receipt in new tab for printing
+                const printWindow = window.open(`/admin/orders/${orderId}/receipt`, "_blank");
+                printWindow.focus();
             }
         });
     }
