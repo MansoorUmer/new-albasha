@@ -34,9 +34,13 @@ class OrderController extends Controller
 
     public function store(OrderStoreRequest $request)
     {
+//        dd($request->type);
         $order = Order::create([
             'customer_id' => $request->customer_id,
             'user_id' => $request->user()->id,
+            'instruction' => $request->instruction ?? null,
+            'type' => $request->type,
+            'table_no' => $request->table_no ?? null,
         ]);
 
         $cart = $request->user()->cart()->get();
@@ -80,5 +84,19 @@ class OrderController extends Controller
         });
 
         return redirect()->route('orders.index')->with('success', 'Partial payment of ' . config('settings.currency_symbol') . number_format($amount, 2) . ' made successfully.');
+    }
+
+    public function updateCookStatus(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'cook_status' => 'required|in:pending,preparing,complete',
+        ]);
+
+        $order = Order::findOrFail($request->order_id);
+        $order->cook_status = $request->cook_status;
+        $order->save();
+
+        return response()->json(['message' => 'Status updated successfully']);
     }
 }

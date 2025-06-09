@@ -24,7 +24,7 @@ return [
     // Table module messages
     //==========================================
     'ID'                => 'ID',
-    'Customer_Name'     => 'Customer Name',
+    'Customer_Name'     => 'Table No',
     'Total'             => 'Total',
     'Received_Amount'   => 'Received Amount',
     'Status'            => 'Status',
@@ -34,6 +34,8 @@ return [
     'Partial'           => 'Partial',
     'Paid'              => 'Paid',
     'Change'            => 'Change',
-    'Actions'           => 'Actions'
-
+    'Actions'           => 'Actions',
+    'pending'           => 'Pending',
+    'preparing'         => 'Preparing',
+    'complete'          => 'Complete',
 ];

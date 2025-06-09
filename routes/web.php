@@ -34,7 +34,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     Route::get('/purchase', [PurchaseController::class, 'index'])->name('purchase.cart.index');
     Route::post('/orders/partial-payment', [OrderController::class, 'partialPayment'])->name('orders.partial-payment');
-
+    Route::post('/orders/update-cook-status', [OrderController::class,'updateCookStatus'])->name('orders.update-cook-status');
     // Transaltions route for React component
     Route::get('/locale/{type}', function ($type) {
         $translations = trans($type);

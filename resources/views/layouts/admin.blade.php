@@ -23,6 +23,25 @@
                             'warning_quantity' => config('settings.warning_quantity')
                         ]) ?>
     </script>
+    <style>
+        .status-pending {
+            background-color: #fff8e1; /* light orange background */
+            color: #FFA500;
+            font-weight: bold;
+        }
+
+        .status-preparing {
+            background-color: #e3f2fd; /* light blue background */
+            color: #007BFF;
+            font-weight: bold;
+        }
+
+        .status-complete {
+            background-color: #e8f5e9; /* light green background */
+            color: #28A745;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body class="hold-transition sidebar-mini">

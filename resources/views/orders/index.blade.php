@@ -34,6 +34,7 @@
                     <th>{{ __('order.Total') }}</th>
                     <th>{{ __('order.Received_Amount') }}</th>
                     <th>{{ __('order.Status') }}</th>
+                    <th>Cook Status</th>
                     <th>{{ __('order.To_Pay') }}</th>
                     <th>{{ __('order.Created_At') }}</th>
                     <th>{{ __('order.Actions') }}</th>
@@ -43,7 +44,7 @@
                 @foreach ($orders as $order)
                 <tr>
                     <td>{{$order->id}}</td>
-                    <td>{{$order->getCustomerName()}}</td>
+                    <td>@if(!is_null($order->table_no)) {{$order->table_no}}@else N/A @endif</td>
                     <td>{{ config('settings.currency_symbol') }} {{$order->formattedTotal()}}</td>
                     <td>{{ config('settings.currency_symbol') }} {{$order->formattedReceivedAmount()}}</td>
                     <td>
@@ -57,6 +58,23 @@
                             <span class="badge badge-info">{{ __('order.Change') }}</span>
                         @endif
                     </td>
+                    <td>
+                        @php
+                            $statusClass = '';
+                            if ($order->cook_status === 'pending') {
+                                $statusClass = 'status-pending';
+                            } elseif ($order->cook_status === 'preparing') {
+                                $statusClass = 'status-preparing';
+                            } elseif ($order->cook_status === 'complete') {
+                                $statusClass = 'status-complete';
+                            }
+                        @endphp
+                        <select class="form-control cook-status-select {{ $statusClass }}" data-order-id="{{ $order->id }}">
+                            <option value="pending" {{ $order->cook_status == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="preparing" {{ $order->cook_status == 'preparing' ? 'selected' : '' }}>Preparing</option>
+                            <option value="complete" {{ $order->cook_status == 'complete' ? 'selected' : '' }}>Complete</option>
+                        </select>
+                    </td>
                     <td>{{config('settings.currency_symbol')}} {{number_format($order->total() - $order->receivedAmount(), 2)}}</td>
                     <td>{{$order->created_at}}</td>
                     <td>
@@ -68,13 +86,27 @@
                             data-customer-name="{{ $order->getCustomerName() }}"
                             data-total="{{ $order->total() }}"
                             data-received="{{ $order->receivedAmount() }}"
+                            data-instruction="{{ $order->instruction}}"
                             data-items="{{ json_encode($order->items) }}"
                             data-created-at="{{ $order->created_at }}"
                             data-payment="{{ isset($order->payments) && count($order->payments) > 0 ? $order->payments[0]->amount : 0 }}">
                             <ion-icon size="samll" name="eye"></ion-icon>
                         </button>
+                        <button
+                            class="btn btn-sm btn-dark btnPrintReceipt"
+                            data-order-id="{{ $order->id }}"
+                            data-customer-name="{{ $order->getCustomerName() }}"
+                            data-total="{{ $order->total() }}"
+                            data-received="{{ $order->receivedAmount() }}"
+                            data-instruction="{{ $order->instruction }}"
+                            data-items="{{ json_encode($order->items) }}"
+                            data-created-at="{{ $order->created_at }}"
+                        >
+                            <ion-icon size="small" name="print"></ion-icon>
+                        </button>
 
-                        @if($order->total() > $order->receivedAmount())
+
+                    @if($order->total() > $order->receivedAmount())
                             <!-- Button for Partial Payment -->
                             <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#partialPaymentModal" data-orders-id="{{ $order->id }}" data-remaining-amount="{{ $order->total() - $order->receivedAmount() }}">
                                 Pay Partial Amount
@@ -130,7 +162,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalInvoiceLabel">Next Gen POS</h5>
+                <h5 class="modal-title" id="modalInvoiceLabel">New Albasha POS</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -145,6 +177,7 @@
     </div>
 </div>
 
+<div id="printableReceipt" style="display: none;"></div>
 @endsection
 
 @section('js')
@@ -160,6 +193,7 @@
         var orderId = button.data('order-id');
         var customerName = button.data('customer-name');
         var totalAmount = button.data('total');
+        var instruction = button.data('instruction');
         var receivedAmount = button.data('received');
         var payment = button.data('payment');
         var createdAt = button.data('created-at');
@@ -241,6 +275,14 @@
                     <tfoot>
                       <tr>
                         <th class="text-right" colspan="5">
+                          Instructions:
+                        </th>
+                        <th class="right">
+                          <strong>${instruction}</strong>
+                        </th>
+                      </tr>
+                      <tr>
+                        <th class="text-right" colspan="5">
                           Total
                         </th>
                         <th class="right">
@@ -282,4 +324,104 @@
 });
 
 </script>
+<script>
+    $(document).on('change', '.cook-status-select', function() {
+        var select = $(this);
+        var orderId = select.data('order-id');
+        var newStatus = select.val();
+
+        select.prop('disabled', true);
+
+        $.ajax({
+            url: '{{ route("orders.update-cook-status") }}',
+            method: 'POST',
+            data: {
+                order_id: orderId,
+                cook_status: newStatus,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                console.log('Status updated successfully');
+                select.prop('disabled', false);
+            },
+            error: function(xhr) {
+                console.error('Error updating status:', xhr.responseText);
+                select.prop('disabled', false);
+                alert('Failed to update status. Please try again.');
+            }
+        });
+    });
+</script>
+    <script>
+        document.querySelectorAll('.cook-status-select').forEach(select => {
+            select.addEventListener('change', function () {
+                this.classList.remove('status-pending', 'status-preparing', 'status-complete');
+                this.classList.add('status-' + this.value);
+            });
+        });
+    </script>
+<script>
+    $(document).on('click', '.btnPrintReceipt', function () {
+        const button = $(this);
+        const customerName = button.data('customer-name');
+        const total = button.data('total');
+        const received = button.data('received');
+        const instruction = button.data('instruction');
+        const createdAt = button.data('created-at');
+        const items = button.data('items');
+
+        let itemsHTML = '';
+        items.forEach((item, index) => {
+            itemsHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${item.product.name}</td>
+                <td>${parseFloat(item.product.price).toFixed(2)}</td>
+                <td>${item.quantity}</td>
+                <td>${(parseFloat(item.product.price) * item.quantity).toFixed(2)}</td>
+            </tr>
+        `;
+        });
+
+        const html = `
+        <div style="font-family: monospace; padding: 20px;">
+            <h3 style="text-align: center;">New Albasha POS</h3>
+            <p>Date: ${createdAt}</p>
+            <p>Customer: ${customerName || 'N/A'}</p>
+            <hr>
+            <table width="100%" border="1" cellspacing="0" cellpadding="4">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsHTML}
+                </tbody>
+            </table>
+            <hr>
+            <p><strong>Instruction:</strong> ${instruction}</p>
+            <p><strong>Total:</strong> {{ config('settings.currency_symbol') }} ${total}</p>
+            <p><strong>Paid:</strong> {{ config('settings.currency_symbol') }} ${received}</p>
+            <p><strong>Change:</strong> {{ config('settings.currency_symbol') }} ${(received - total).toFixed(2)}</p>
+        </div>
+    `;
+
+        const printSection = document.getElementById('printableReceipt');
+        printSection.innerHTML = html;
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`<html><head><title>Receipt</title></head><body>${html}</body></html>`);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    });
+
+</script>
+
 @endsection

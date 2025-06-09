@@ -40,7 +40,7 @@ return [
     'Avatar'            => 'Avatar',
     'Choose_file'       => 'Choose file',
     'Update_Customer'   => 'Update Customer',
-    'Customer_List'     => 'Customer List',
+    'Customer_List'     => 'Table List',
     'Add_Customer'      => 'Add Customer',
     'ID'                => 'ID',
     'sure'              => 'Are you sure?',
