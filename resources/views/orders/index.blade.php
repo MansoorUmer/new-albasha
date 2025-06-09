@@ -95,7 +95,7 @@
                         <button
                             class="btn btn-sm btn-dark btnPrintReceipt"
                             data-order-id="{{ $order->id }}"
-                            data-customer-name="{{ $order->getCustomerName() }}"
+                            data-customer-name="{{ $order->type }}"
                             data-total="{{ $order->total() }}"
                             data-received="{{ $order->receivedAmount() }}"
                             data-instruction="{{ $order->instruction }}"
@@ -387,7 +387,7 @@
         <div style="font-family: monospace; padding: 20px;">
             <h3 style="text-align: center;">New Albasha POS</h3>
             <p>Date: ${createdAt}</p>
-            <p>Customer: ${customerName || 'N/A'}</p>
+            <p>Type: ${customerName || 'N/A'}</p>
             <hr>
             <table width="100%" border="1" cellspacing="0" cellpadding="4">
                 <thead>
