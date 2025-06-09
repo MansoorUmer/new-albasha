@@ -83,7 +83,7 @@
                             data-toggle="modal"
                             data-target="#modalInvoice"
                             data-order-id="{{ $order->id }}"
-                            data-customer-name="{{ $order->getCustomerName() }}"
+                            data-customer-name="{{ $order->type }}"
                             data-total="{{ $order->total() }}"
                             data-received="{{ $order->receivedAmount() }}"
                             data-instruction="{{ $order->instruction}}"
@@ -363,6 +363,7 @@
 <script>
     $(document).on('click', '.btnPrintReceipt', function () {
         const button = $(this);
+        var orderId = button.data('order-id');
         const customerName = button.data('customer-name');
         const total = button.data('total');
         const received = button.data('received');
@@ -386,6 +387,7 @@
         const html = `
         <div style="font-family: monospace; padding: 20px;">
             <h3 style="text-align: center;">New Albasha POS</h3>
+            <h5>Order No : ${orderId}</h5>
             <p>Date: ${createdAt}</p>
             <p>Type: ${customerName || 'N/A'}</p>
             <hr>
