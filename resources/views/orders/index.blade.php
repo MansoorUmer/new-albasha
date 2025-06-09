@@ -99,6 +99,7 @@
                             data-total="{{ $order->total() }}"
                             data-received="{{ $order->receivedAmount() }}"
                             data-instruction="{{ $order->instruction }}"
+                            data-table-no="{{ $order->table_no }}"
                             data-items="{{ json_encode($order->items) }}"
                             data-created-at="{{ $order->created_at }}"
                         >
@@ -364,6 +365,7 @@
     $(document).on('click', '.btnPrintReceipt', function () {
         const button = $(this);
         var orderId = button.data('order-id');
+        const tableNo = button.data('table-no');
         const customerName = button.data('customer-name');
         const total = button.data('total');
         const received = button.data('received');
@@ -388,6 +390,7 @@
         <div style="font-family: monospace; padding: 20px;">
             <h3 style="text-align: center;">New Albasha POS</h3>
             <h5>Order No : ${orderId}</h5>
+            <h5>Table No : ${tableNo}</h5>
             <p>Date: ${createdAt}</p>
             <p>Type: ${customerName || 'N/A'}</p>
             <hr>
