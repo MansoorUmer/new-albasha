@@ -400,6 +400,7 @@ class Cart extends Component {
             order_type: "Dine-in",
             table_no: "",
             translations: {},
+            discount: 0,
         };
 
         this.loadCart = this.loadCart.bind(this);
@@ -503,6 +504,12 @@ class Cart extends Component {
         const total = cart.map((c) => c.pivot.quantity * c.price);
         return sum(total).toFixed(2);
     }
+    // getTotal(cart) {
+    //     const total = cart.map((c) => c.pivot.quantity * c.price);
+    //     const sumTotal = sum(total);
+    //     const discountedTotal = sumTotal - this.state.discount;
+    //     return discountedTotal > 0 ? discountedTotal.toFixed(2) : "0.00";
+    // }
 
     handleClickDelete(product_id) {
         axios
@@ -635,6 +642,7 @@ class Cart extends Component {
                         instruction: this.state.instruction,
                         type: this.state.order_type,
                         table_no: this.state.table_no,
+                        discount: this.state.discount, // ✅ include discount
                     })
                     .then((res) => {
                         this.loadCart();
@@ -783,11 +791,30 @@ class Cart extends Component {
                     </div>
 
                     <div className="row">
+                        <div className="col">
+                            <label >{translations["discount"] || "Discount"}:</label>
+                        </div>
+                        <div className="col">
+                            <input
+                                type="number"
+                                className="form-control"
+                                value={this.state.discount}
+                                onChange={(e) => this.setState({ discount: parseFloat(e.target.value) || 0 })}
+                                placeholder="Enter discount amount"
+                                min="0"
+                            />
+                        </div>
+
+                    </div>
+
+
+                    <div className="row">
                         <div className="col">{translations["total"]}:</div>
                         <div className="col text-right">
                             {window.APP.currency_symbol} {this.getTotal(cart)}
                         </div>
                     </div>
+
                     <div className="row">
                         <div className="col">
                             <button

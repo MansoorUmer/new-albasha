@@ -13,6 +13,7 @@ class Order extends Model
         'instruction',
         'type',
         'table_no',
+        'discount',
     ];
 
     public function items()

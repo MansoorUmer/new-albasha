@@ -34,12 +34,15 @@ class OrderController extends Controller
 
     public function store(OrderStoreRequest $request)
     {
+//        dd($request->all());
+        $discount = $request->input('discount', 0);
 //        dd($request->type);
         $order = Order::create([
             'customer_id' => $request->customer_id,
             'user_id' => $request->user()->id,
             'instruction' => $request->instruction ?? null,
             'type' => $request->type,
+            'discount' => $request->discount,
             'table_no' => $request->table_no ?? null,
         ]);
 
