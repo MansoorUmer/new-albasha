@@ -69,9 +69,15 @@
         @endforeach
         </tbody>
         <tfoot>
+        @if($order->discount > 0)
+            <tr>
+                <td colspan="4" class="text-right">Discount</td>
+                <td>{{ config('settings.currency_symbol') }} {{ number_format($order->discount, 2) }}</td>
+            </tr>
+        @endif
         <tr>
             <td colspan="4" class="text-right">Subtotal</td>
-            <td>{{ config('settings.currency_symbol') }} {{ number_format($order->total(), 2) }}</td>
+            <td>{{ config('settings.currency_symbol') }} {{ number_format($order->total() - $order->discount, 2) }}</td>
         </tr>
         <tr>
             <td colspan="4" class="text-right">Paid</td>
