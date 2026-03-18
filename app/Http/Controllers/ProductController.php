@@ -18,22 +18,53 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $products = new Product();
+        $products = Product::query()->select('products.*');
+        
+        // Eager load variants for total quantity calculation
+        $products = $products->with('variants');
+
         if ($request->search) {
-            $products = $products->where('name', 'LIKE', "%{$request->search}%");
+            $products = $products->where(function($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->search}%")
+                  ->orWhere('barcode', 'LIKE', "%{$request->search}%");
+            });
         }
         if ($request->category) {
             $products = $products->where('category', $request->category);
         }
         
+        // Sorting logic
+        $sortColumn = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+        
+        // Validating sort column and direction
+        $allowedColumns = ['name', 'price', 'quantity', 'created_at'];
+        if (!in_array($sortColumn, $allowedColumns)) $sortColumn = 'created_at';
+        if (!in_array($sortDirection, ['asc', 'desc'])) $sortDirection = 'desc';
+
+        // Add a subquery for the total quantity to allow sorting by the calculated sum
+        $products = $products->addSelect(['total_stock' => Product::selectRaw('COALESCE(SUM(quantity), 0)')
+            ->where(function($query) {
+                $query->whereColumn('parent_id', 'products.id')
+                      ->orWhereColumn('id', 'products.id');
+            })
+        ]);
+
         // Only show active products in the POS (JSON requests)
         if (request()->wantsJson()) {
-            $products = $products->where('status', 1);
+            $products = $products->where('status', 1)
+                                ->whereNull('parent_id')
+                                ->orderBy('name', 'asc'); // Alphabetical order is better for POS
+        } else {
+            // In Admin list, show Parents first, then handle the user's sort
+            $orderByColumn = ($sortColumn === 'quantity') ? 'total_stock' : $sortColumn;
+            $products = $products->orderByRaw('parent_id IS NULL DESC')
+                                ->orderBy($orderByColumn, $sortDirection);
         }
         
         // Use a larger limit for the POS/JSON requests
         $limit = request()->wantsJson() ? 100 : 10;
-        $products = $products->latest()->paginate($limit);
+        $products = $products->paginate($limit);
         
         if (request()->wantsJson()) {
             return ProductResource::collection($products);
@@ -48,7 +79,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return view('products.create');
+        $parents = Product::whereNull('parent_id')->get();
+        return view('products.create', compact('parents'));
     }
 
     /**
@@ -66,7 +98,9 @@ class ProductController extends Controller
         }
 
         $product = Product::create([
+            'parent_id' => $request->parent_id,
             'name' => $request->name,
+            'variant_name' => $request->variant_name,
             'description' => $request->description,
             'image' => $image_path,
             'barcode' => $request->barcode,
@@ -101,7 +135,8 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        return view('products.edit')->with('product', $product);
+        $parents = Product::whereNull('parent_id')->where('id', '!=', $product->id)->get();
+        return view('products.edit', compact('product', 'parents'));
     }
 
     /**
@@ -113,7 +148,9 @@ class ProductController extends Controller
      */
     public function update(ProductUpdateRequest $request, Product $product)
     {
+        $product->parent_id = $request->parent_id;
         $product->name = $request->name;
+        $product->variant_name = $request->variant_name;
         $product->description = $request->description;
         $product->barcode = $request->barcode;
         $product->price = $request->price;

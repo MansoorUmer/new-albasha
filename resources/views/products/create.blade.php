@@ -22,6 +22,35 @@
                 @enderror
             </div>
 
+            <div class="form-group">
+                <label for="parent_id">Is a Variant of?</label>
+                <select name="parent_id" class="form-control @error('parent_id') is-invalid @enderror" id="parent_id">
+                    <option value="">-- No, this is a Main Product --</option>
+                    @foreach($parents as $parent)
+                        <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
+                            {{ $parent->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('parent_id')
+                <span class="invalid-feedback" role="alert">
+                    <strong>{{ $message }}</strong>
+                </span>
+                @enderror
+                <small class="text-muted">If this is a variant (like Small, Large, etc.), select its main product above.</small>
+            </div>
+
+            <div class="form-group" id="variant_name_group" style="{{ old('parent_id') ? '' : 'display: none;' }}">
+                <label for="variant_name">Variant Label (e.g. Small, Medium, 5pcs)</label>
+                <input type="text" name="variant_name" class="form-control @error('variant_name') is-invalid @enderror"
+                    id="variant_name" placeholder="Variant Label" value="{{ old('variant_name') }}">
+                @error('variant_name')
+                <span class="invalid-feedback" role="alert">
+                    <strong>{{ $message }}</strong>
+                </span>
+                @enderror
+            </div>
+
 
             <div class="form-group">
                 <label for="description">{{ __('product.Description') }}</label>
@@ -115,6 +144,15 @@
 <script>
     $(document).ready(function () {
         bsCustomFileInput.init();
+
+        $('#parent_id').change(function() {
+            if ($(this).val()) {
+                $('#variant_name_group').slideDown();
+            } else {
+                $('#variant_name_group').slideUp();
+                $('#variant_name').val('');
+            }
+        });
     });
 </script>
 @endsection

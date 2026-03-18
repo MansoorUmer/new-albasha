@@ -32,6 +32,8 @@ class ProductStoreRequest extends FormRequest
             'quantity' => 'required|integer',
             'status' => 'required|boolean',
             'category' => 'nullable|string|max:255',
+            'parent_id' => 'nullable|exists:products,id',
+            'variant_name' => 'nullable|string|max:191',
         ];
     }
 }

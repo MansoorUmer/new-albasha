@@ -25,6 +25,9 @@ class Cart extends Component {
             // Category filtering
             activeCategory: "All",
             categories: [],
+            // Variant Selection
+            showVariantModal: false,
+            selectedParent: null,
         };
 
         this.loadCart = this.loadCart.bind(this);
@@ -188,43 +191,51 @@ class Cart extends Component {
         }
     }
 
-    addProductToCart(barcode) {
-        let product = this.state.products.find((p) => p.barcode === barcode);
-        if (!!product) {
-            let cart = this.state.cart.find((c) => c.id === product.id);
-            if (!!cart) {
-                this.setState({
-                    cart: this.state.cart.map((c) => {
-                        if (
-                            c.id === product.id &&
-                            product.quantity > c.pivot.quantity
-                        ) {
-                            c.pivot.quantity += 1;
-                        }
-                        return c;
-                    }),
-                });
-            } else {
-                if (product.quantity > 0) {
-                    product = {
-                        ...product,
-                        pivot: {
-                            quantity: 1,
-                            product_id: product.id,
-                            user_id: 1,
-                        },
-                    };
-
-                    this.setState({ cart: [...this.state.cart, product] });
-                }
-            }
-
-            axios
-                .post("/admin/cart", { barcode })
-                .catch((err) => {
-                    Swal.fire("Error!", err.response.data.message, "error");
-                });
+    addProductToCart(product) {
+        if (product.variants && product.variants.length > 0) {
+            this.setState({ selectedParent: product, showVariantModal: true });
+            return;
         }
+
+        const barcode = product.barcode;
+        let cartItem = this.state.cart.find((c) => c.id === product.id);
+        if (!!cartItem) {
+            this.setState({
+                cart: this.state.cart.map((c) => {
+                    if (
+                        c.id === product.id &&
+                        product.quantity > c.pivot.quantity
+                    ) {
+                        c.pivot.quantity += 1;
+                    }
+                    return c;
+                }),
+            });
+        } else {
+            if (product.quantity > 0) {
+                const newProduct = {
+                    ...product,
+                    pivot: {
+                        quantity: 1,
+                        product_id: product.id,
+                        user_id: 1,
+                    },
+                };
+
+                this.setState({ cart: [...this.state.cart, newProduct] });
+            }
+        }
+
+        axios
+            .post("/admin/cart", { barcode })
+            .catch((err) => {
+                Swal.fire("Error!", err.response.data.message, "error");
+            });
+    }
+
+    addVariantToCart(variant) {
+        this.setState({ showVariantModal: false, selectedParent: null });
+        this.addProductToCart(variant);
     }
 
     setTableNo(event) {
@@ -394,12 +405,57 @@ class Cart extends Component {
             translations,
             activeOrderId,
             activeOrderInfo,
+            showVariantModal,
+            selectedParent,
         } = this.state;
 
         const isAddingItems = !!activeOrderId;
 
         return (
-            <div className="row">
+            <div className="row" style={{ position: 'relative' }}>
+                {/* Variant Selection Modal */}
+                {showVariantModal && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0, left: 0, width: '100%', height: '100%',
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        zIndex: 1000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <div className="card" style={{ width: '400px', borderRadius: '15px', overflow: 'hidden' }}>
+                            <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <h5 className="mb-0">Select Variant: {selectedParent?.name}</h5>
+                                <button className="btn btn-sm text-white" onClick={() => this.setState({ showVariantModal: false })}>&times;</button>
+                            </div>
+                            <div className="card-body p-0">
+                                <div className="list-group list-group-flush">
+                                    {selectedParent?.variants.map(variant => (
+                                        <button 
+                                            key={variant.id}
+                                            className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                            onClick={() => this.addVariantToCart(variant)}
+                                            style={{ padding: '15px 20px' }}
+                                        >
+                                            <div>
+                                                <span style={{ fontWeight: '600' }}>{variant.variant_name || variant.name}</span>
+                                                <small className="ml-2 text-muted">({variant.quantity} in stock)</small>
+                                            </div>
+                                            <span className="badge badge-primary badge-pill">
+                                                {window.APP.currency_symbol} {variant.price}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="card-footer bg-light">
+                                <button className="btn btn-secondary btn-block" onClick={() => this.setState({ showVariantModal: false })}>Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="col-md-6 col-lg-4">
                     {/* Active Order Banner */}
                     {isAddingItems && (
@@ -483,7 +539,10 @@ class Cart extends Component {
                                 <tbody>
                                     {cart.map((c) => (
                                         <tr key={c.id}>
-                                            <td style={{ verticalAlign: 'middle' }}>{c.name}</td>
+                                            <td style={{ verticalAlign: 'middle' }}>
+                                                <strong>{c.name}</strong>
+                                                {c.variant_name && <small className="d-block text-muted">{c.variant_name}</small>}
+                                            </td>
                                             <td style={{ verticalAlign: 'middle' }}>
                                                 <div className="d-flex align-items-center" style={{ gap: '5px' }}>
                                                     <div className="input-group input-group-sm" style={{ width: '110px' }}>
@@ -727,7 +786,7 @@ class Cart extends Component {
                         }}>
                             {products.length > 0 ? products.map((p) => (
                                 <div
-                                    onClick={() => this.addProductToCart(p.barcode)}
+                                    onClick={() => this.addProductToCart(p)}
                                     key={p.id}
                                     className="item"
                                     style={{
