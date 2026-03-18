@@ -21,6 +21,7 @@ class User extends Authenticatable
         'last_name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -41,6 +42,26 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isCashier(): bool
+    {
+        return $this->role === 'cashier';
+    }
+
+    public function isKitchen(): bool
+    {
+        return $this->role === 'kitchen';
+    }
+
+    public function hasRole(string ...$roles): bool
+    {
+        return in_array($this->role, $roles);
+    }
 
     public function cart()
     {

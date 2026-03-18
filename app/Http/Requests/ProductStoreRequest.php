@@ -31,7 +31,7 @@ class ProductStoreRequest extends FormRequest
             'price' => 'required|regex:/^\d+(\.\d{1,2})?$/',
             'quantity' => 'required|integer',
             'status' => 'required|boolean',
-
+            'category' => 'nullable|string|max:255',
         ];
     }
 }

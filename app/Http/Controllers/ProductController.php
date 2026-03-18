@@ -22,7 +22,19 @@ class ProductController extends Controller
         if ($request->search) {
             $products = $products->where('name', 'LIKE', "%{$request->search}%");
         }
-        $products = $products->latest()->paginate(10);
+        if ($request->category) {
+            $products = $products->where('category', $request->category);
+        }
+        
+        // Only show active products in the POS (JSON requests)
+        if (request()->wantsJson()) {
+            $products = $products->where('status', 1);
+        }
+        
+        // Use a larger limit for the POS/JSON requests
+        $limit = request()->wantsJson() ? 100 : 10;
+        $products = $products->latest()->paginate($limit);
+        
         if (request()->wantsJson()) {
             return ProductResource::collection($products);
         }
@@ -60,7 +72,8 @@ class ProductController extends Controller
             'barcode' => $request->barcode,
             'price' => $request->price,
             'quantity' => $request->quantity,
-            'status' => $request->status
+            'status' => $request->status,
+            'category' => $request->category
         ]);
 
         if (!$product) {
@@ -106,6 +119,7 @@ class ProductController extends Controller
         $product->price = $request->price;
         $product->quantity = $request->quantity;
         $product->status = $request->status;
+        $product->category = $request->category;
 
         if ($request->hasFile('image')) {
             // Delete old image

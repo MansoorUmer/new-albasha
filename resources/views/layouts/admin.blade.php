@@ -5,15 +5,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>@yield('title', config('app.name'))</title>
-    <!-- Tell the browser to be responsive to screen width -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Ionicons -->
-    <!-- <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"> -->
-    <!-- overlayScrollbars -->
-    <!-- <link rel="stylesheet" href="{{ asset('css/app.css') }}"> -->
-    <!-- Google Font: Source Sans Pro -->
-    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
-
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     @yield('css')
@@ -25,26 +19,29 @@
     </script>
     <style>
         .status-pending {
-            background-color: #fff8e1; /* light orange background */
-            color: #FFA500;
-            font-weight: bold;
+            background-color: #fff8e1;
+            color: #f39c12;
+            font-weight: 600;
+            border-radius: 8px;
         }
 
         .status-preparing {
-            background-color: #e3f2fd; /* light blue background */
-            color: #007BFF;
-            font-weight: bold;
+            background-color: #e3f2fd;
+            color: #3498db;
+            font-weight: 600;
+            border-radius: 8px;
         }
 
         .status-complete {
-            background-color: #e8f5e9; /* light green background */
-            color: #28A745;
-            font-weight: bold;
+            background-color: #e8f5e9;
+            color: #27ae60;
+            font-weight: 600;
+            border-radius: 8px;
         }
     </style>
 </head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini" style="font-family: 'Inter', sans-serif;">
     <!-- Site wrapper -->
     <div class="wrapper">
 
@@ -57,7 +54,7 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>@yield('content-header')</h1>
+                            <h1 style="font-weight: 700; color: #2d3748;">@yield('content-header')</h1>
                         </div>
                         <div class="col-sm-6 text-right">
                             @yield('content-actions')
@@ -85,8 +82,6 @@
         <!-- /.control-sidebar -->
     </div>
     <!-- ./wrapper -->
-    <!-- <script src="{{ asset('js/app.js') }}"></script> -->
-
 
     @yield('js')
     @yield('model')

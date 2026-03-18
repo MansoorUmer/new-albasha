@@ -10,11 +10,22 @@ class Order extends Model
         'customer_id',
         'user_id',
         'cook_status',
+        'status',
         'instruction',
         'type',
         'table_no',
         'discount',
     ];
+
+    public function isOpen(): bool
+    {
+        return $this->status === 'open';
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->status === 'completed';
+    }
 
     public function items()
     {

@@ -37,16 +37,27 @@
             </div>
 
             <div class="form-group">
-                <label for="image">{{ __('product.Image') }}</label>
-                <div class="custom-file">
-                    <input type="file" class="custom-file-input" name="image" id="image">
-                    <label class="custom-file-label" for="image">{{ __('product.Choose_file') }}</label>
-                </div>
-                @error('image')
+                <label for="category">Category</label>
+                <input type="text" name="category" class="form-control @error('category') is-invalid @enderror"
+                    id="category" placeholder="Category (e.g. Appetizers, Main Course, Drinks)" value="{{ old('category', $product->category) }}">
+                @error('category')
                 <span class="invalid-feedback" role="alert">
                     <strong>{{ $message }}</strong>
                 </span>
                 @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="image">{{ __('product.Image') }}</label>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input @error('image') is-invalid @enderror" name="image" id="image">
+                    <label class="custom-file-label" for="image">{{ __('product.Choose_file') }}</label>
+                    @error('image')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                    @enderror
+                </div>
             </div>
 
             <div class="form-group">
@@ -85,8 +96,8 @@
             <div class="form-group">
                 <label for="status">{{ __('product.Status') }}</label>
                 <select name="status" class="form-control @error('status') is-invalid @enderror" id="status">
-                    <option value="1" {{ old('status', $product->status) === 1 ? 'selected' : ''}}>{{ __('common.Active') }}</option>
-                    <option value="0" {{ old('status', $product->status) === 0 ? 'selected' : ''}}>{{ __('common.Inactive') }}</option>
+                    <option value="1" {{ old('status', $product->status) == 1 ? 'selected' : ''}}>{{ __('common.Active') }}</option>
+                    <option value="0" {{ old('status', $product->status) == 0 ? 'selected' : ''}}>{{ __('common.Inactive') }}</option>
                 </select>
                 @error('status')
                 <span class="invalid-feedback" role="alert">

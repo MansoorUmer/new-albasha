@@ -4,22 +4,28 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>@yield('title')</title>
+    <title>@yield('title', 'Kitchen POS - Login')</title>
     <!-- Tell the browser to be responsive to screen width -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Ionicons -->
     <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-    <!-- <link rel="stylesheet" href="{{ asset('css/app.css') }}"> -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
     @yield('css')
 </head>
 
 <body class="hold-transition login-page">
     <div class="login-box">
         <div class="login-logo">
-            New-Albasha
+            <i class="fas fa-utensils mr-2" style="color: white;"></i>Kitchen POS
         </div>
         <!-- /.login-logo -->
         <div class="card">
